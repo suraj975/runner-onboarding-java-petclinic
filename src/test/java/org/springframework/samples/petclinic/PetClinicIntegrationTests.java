@@ -63,6 +63,20 @@ public class PetClinicIntegrationTests {
 		assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
+	@Test
+	void ownerSearchCanNavigateToMatchingOwner() {
+		RestTemplate template = builder.baseUri("http://localhost:" + port).build();
+		ResponseEntity<String> search = template.exchange(RequestEntity.get("/owners?lastName=Davis").build(),
+				String.class);
+		assertThat(search.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(search.getBody()).contains("Betty Davis", "Harold Davis", "href=\"/owners/2\"");
+
+		ResponseEntity<String> details = template.exchange(RequestEntity.get("/owners/2").build(), String.class);
+		assertThat(details.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(details.getBody()).contains("Betty Davis", "638 Cardinal Ave.", "6085551749");
+		assertThat(details.getBody()).doesNotContain("Harold Davis");
+	}
+
 	public static void main(String[] args) {
 		SpringApplication.run(PetClinicApplication.class, "--spring.docker.compose.lifecycle-management=NONE");
 	}
